@@ -5,14 +5,17 @@ import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
+  StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { COLORS } from "../../app/constants/colors"; //
-import { authStyles } from "../../assets/images/styles/auth.styles";
+
+import { COLORS } from "../constants/colors"; //
+import { authStyles } from "../images/styles/auth.styles";
 
 import { Ionicons } from "@expo/vector-icons";
 // import VerifyEmail from "./verify-email";
@@ -25,44 +28,35 @@ const SignUpScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
-  const moveToMainScreen = () => {
-    router.push("/favourites");
+
+  const moveToMainScreen = async () => {
+    try {
+      const response = await fetch("http://192.168.1.41:3000/accept/User", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      console.log("hello there", data);
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+      alert(
+        "You have successfully created an account!. Now please SIGN-IN with your credentials"
+      );
+      router.push("/auth/sign-in");
+    } catch (error) {
+      console.log("i am error from account creation", error);
+    }
   };
-
-  //   const handleSignUp = async () => {
-  //     if (!email || !password)
-  //       return Alert.alert("Error", "Please fill in all fields");
-  //     if (password.length < 6)
-  //       return Alert.alert("Error", "Password must be at least 6 characters");
-
-  //     // if (!isLoaded) return;
-
-  //     setLoading(true);
-
-  //     try {
-  //       await signUp.create({ emailAddress: email, password });
-
-  //       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-  //       setPendingVerification(true);
-  //     } catch (err) {
-  //       Alert.alert(
-  //         "Error",
-  //         err.errors?.[0]?.message || "Failed to create account"
-  //       );
-  //       console.error(JSON.stringify(err, null, 2));
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (pendingVerification)
-  //     return (
-  //       <VerifyEmail email={email} onBack={() => setPendingVerification(false)} />
-  //     );
 
   return (
     <View style={authStyles.container}>
+      <StatusBar barStyle="dark-content" />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "android" ? 64 : 0}
@@ -75,7 +69,7 @@ const SignUpScreen = () => {
           {/* Image Container */}
           <View style={authStyles.imageContainer}>
             <Image
-              source={require("../../assets/images/i2.png")}
+              source={require("../images/base.png")}
               style={authStyles.image}
               contentFit="contain"
             />
@@ -143,7 +137,9 @@ const SignUpScreen = () => {
             >
               <Text style={authStyles.linkText}>
                 Already have an account?{" "}
-                <Text style={authStyles.link}>Sign In</Text>
+                <Pressable onPress={() => router.push("/auth/sign-in")}>
+                  <Text style={authStyles.link}>Sign In</Text>
+                </Pressable>
               </Text>
             </TouchableOpacity>
           </View>

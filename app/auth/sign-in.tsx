@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+
+import { useRouter } from "expo-router";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -10,17 +12,44 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { COLORS } from "../../app/constants/colors"; //
-import { authStyles } from "../../assets/images/styles/auth.styles";
-
+import { AuthContext } from "../auth/context/authcontext"; // adjust path if needed
+import { COLORS } from "../constants/colors"; //
+import { authStyles } from "../images/styles/auth.styles";
 export default function SignIn() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const router = useRouter();
 
-  const handleSignIn = () => {
-    console.log("Email:", email);
-    console.log("Password:", password);
+  const { login } = useContext(AuthContext);
+  const handleSignIn = async () => {
+    try {
+      const response = await fetch("http://192.168.1.41:3000/accept/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log("heelo", data);
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      console.log("TOKEN:", data.token);
+      alert("Logged in!. ");
+      //save the token globally
+      login(data.token);
+      console.log("i am data dot token", data.token);
+
+      router.push("/auth/onboarding/ProfileCheck");
+    } catch (error) {
+      console.log("Login error:", error);
+      alert("Network error");
+    }
   };
 
   return (
@@ -37,7 +66,7 @@ export default function SignIn() {
           {/* 🖼 Top Image */}
           <View style={authStyles.imageContainer}>
             <Image
-              source={require("../../assets/images/i1.png")}
+              source={require("../images/finalplane.png")}
               style={authStyles.image}
               contentFit="contain"
             />

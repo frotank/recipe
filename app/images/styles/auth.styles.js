@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet } from "react-native";
-import { COLORS } from "../../../app/constants/colors";
+import { COLORS } from "../../constants/colors";
 const { height } = Dimensions.get("window");
 
 export const authStyles = StyleSheet.create({
@@ -24,6 +24,7 @@ export const authStyles = StyleSheet.create({
   image: {
     width: 320,
     height: 320,
+    borderRadius: 50,
   },
   title: {
     fontSize: 28,
